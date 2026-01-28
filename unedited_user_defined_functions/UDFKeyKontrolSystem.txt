@@ -1,0 +1,104 @@
+Begin Function {int iEditorMode, int iOnOff}
+int iKey
+int iTab
+int iCad
+int iNum
+int iSize
+int iNumSub
+String_Var sStringLink
+String_Var sString
+String_Var sAbv
+String_Var sCad
+array_var aTempArray
+
+
+array_var aSafeKeys
+array_var aRemainOff
+
+ref rWeapCloneBase
+
+	;Keys that should never be disabled....................
+
+	let aSafeKeys := Ar_Construct "array"
+	Ar_Append aSafeKeys (GetControl 0)			;Forwards
+	Ar_Append aSafeKeys (GetControl 1)			;Backwards
+	Ar_Append aSafeKeys (GetControl 2)			;Left
+	Ar_Append aSafeKeys (GetControl 3)			;Right
+	Ar_Append aSafeKeys (GetControl 9)			;Run/Walk
+
+	let aRemainOff := Ar_Construct "array"
+	Ar_Append aRemainOff (GetControl 8)			;Crouch
+	Ar_Append aRemainOff (GetControl 10)		;Always Run
+	Ar_Append aRemainOff (GetControl 11)		;Auto Move
+	Ar_Append aRemainOff (GetControl 14)		;Pipboy
+	Ar_Append aRemainOff (GetControl 25)		;QuickSave
+	Ar_Append aRemainOff 46						;C
+	Ar_Append aRemainOff 47						;V
+	Ar_Append aRemainOff PistolWorldOverhaulMCMQuest.kEnterEditor
+	Ar_Append aRemainOff 1
+
+		if iEditorMode == 14 ;Akimbo..........................................................................................................
+			
+			Goo1.AuxVarSetFlt "*_bAkimboMode" = iOnOff
+
+			SetOnKeyDownEventHandler PistolWeaponAkimboMouseLeftFireV1 iOnOff Goo1.AuxVarGetFlt "*_kAkimboLeftFire"
+			SetOnKeyDownEventHandler PistolWeaponAkimboMouseRightFireV1 iOnOff Goo1.AuxVarGetFlt "*_kAkimboRightFire"
+			;Print "Set right fire left fire: " + $iOnOff
+
+			SetOnTriggerDownEventHandler PistolWeaponAkimboMouseLeftFireV1 iOnOff 0
+			SetOnTriggerDownEventHandler PistolWeaponAkimboMouseRightFireV1 iOnOff 1
+			SetOnKeyDownEventHandler PistolWeaponAkimboOnAmmoChange iOnOff (GetControl 18) ;2
+			SetOnKeyDownEventHandler PistolWeaponAkimboOnReloadKeyPressed iOnOff (GetControl 7) ;R
+
+			SetEventHandler ("OnButtonDown:" + $16384) PistolWeaponAkimboOnReloadKeyPressed 
+			;Print "Set reload Akimbo: " + $iOnOff
+
+			SetOnMenuOpenEventHandler (CompileScript "Akimbo\WeaponAkimboOnMenuOpen.txt") iOnOff
+			SetGameMainLoopCallback PistolAkimboMainLoop iOnOff 0 1
+			onAnimationStart iOnOff PistolAkimboNodeLockStart "1" player 
+
+			if iOnOff == 1
+
+				if MenuMode
+					Call (CompileScript "Akimbo\WeaponAkimboOnMenuOpen.txt")
+				else
+					DisableKey Goo1.AuxVarGetFlt "*_kAkimboLeftFire" ;Attack
+					DisableKey Goo1.AuxVarGetFlt "*_kAkimboRightFire" ;Aim
+
+					DisableKey (GetControl 7) ;R
+					DisableControl 7
+					DisableControl 6	;Block and anim
+
+					DisableTrigger 0
+					DisableTrigger 1
+
+					DisableKey (GetControl 18) ;2
+					if eval (AuxiliaryVariableGetFloat "*_bDisableADS" 0 rWeapCloneBase) || Goo1.AuxVarGetFlt "*_bAkimboIndependentFiring" || Goo1.AuxVarGetFlt "*_bAkimboAllowADS" == 0
+						DisableControl 6
+					endif
+				endif
+
+				;Print "Set Akimbo Controls Disabled "
+
+			else
+
+				EnableKey Goo1.AuxVarGetFlt "*_kAkimboLeftFire" ;Attack
+				EnableKey Goo1.AuxVarGetFlt "*_kAkimboRightFire" ;Aim
+				EnableKey (GetControl 7) ;R
+
+				EnableControl 7
+				DisableControl 6	;Block and anim
+
+				EnableTrigger 0
+				EnableTrigger 1
+
+				EnableKey (GetControl 18) ;2
+				if eval (AuxiliaryVariableGetFloat "*_bDisableADS" 0 rWeapCloneBase) || Goo1.AuxVarGetFlt "*_bAkimboIndependentFiring" || Goo1.AuxVarGetFlt "*_bAkimboAllowADS" == 0
+					EnableControl 6
+				endif
+
+				;Print "Set Akimbo Controls Enabled "
+
+			endif
+		endif
+End

@@ -1,0 +1,36 @@
+Begin Function {ref rDropped, ref rDropper}
+
+	;PrintVar rDropper
+	;PrintVar rDropped
+
+	if IsAkimbo rDropped ;Break appart................................
+		ref rWeapRight
+		ref rWeapLeft
+		
+		SplitAkimbo (rDropped.GBI) rWeapLeft rWeapRight
+
+		if eval IsFormValid rWeapRight && IsFormValid rWeapLeft
+	
+			;PrintVar rWeapRight
+			;PrintVar rWeapLeft
+
+			rWeapLeft.MoveTo rDropped
+			rWeapRight.MoveTo rDropped
+
+			CallAfterSeconds 0.01 (Begin Function {}
+
+				rWeapRight.PushObject 0 0 0 10 rDropper
+				rWeapRight.PushObject 0 0 0 10 rDropper
+
+			end) 0
+
+		else
+
+			Print "Failed to Split!"
+			PrintVar rWeapRight
+			PrintVar rWeapLeft
+
+		endif
+	endif
+
+end

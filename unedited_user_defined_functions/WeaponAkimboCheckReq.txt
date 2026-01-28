@@ -1,0 +1,37 @@
+begin Function {ref rActor, ref rAkimbo, ref rWeaponRight, ref rWeaponLeft, int bShowMessage}
+ref rAkimboBase
+int iReq
+string_var sWeapName
+	SetFunctionValue 0
+
+	if (AX_GetType "DisableAkimbo" 0 (rWeaponLeft.GBI) == 0) || (AX_GetType "DisableAkimbo" 0 (rWeaponRight.GBI) == 0)
+		return
+	endif
+
+	let iReq == (rWeaponRight.GetWeaponRequiredStrength) + (rWeaponLeft.GetWeaponRequiredStrength)
+
+	if rActor.HasPerk WeaponHandling
+		let iReq -= 4
+	endif
+
+	if rActor.HasPerk PistolPerkAkimboMan && iReq > 1
+		let iReq = iReq / 2
+	endif
+
+	if (rActor.GetAV Strength) >= iReq
+		if rActor == Player
+			if player.HasPerk PistolPerkAkimbo || player.HasPerk PistolPerkAkimboMan
+				SetFunctionValue 1
+			else
+				MessageExAlt 4 ("glow_message_vaultboy_surprised.dds|Requires Akimbo Kid perk")
+			endif
+		endif
+	else
+		let rAkimboBase == GetStaticAkimbo rWeaponRight rWeaponLeft
+		let sWeapName == (rWeaponLeft.LNGetName) + " & " + (rWeaponRight.LNGetName)
+		if bShowMessage
+			ClearMessageQueue
+			MessageExAlt 4 ("glow_message_vaultboy_surprised.dds|" + sWeapName + "%r -Requires " + $iReq + " strength.")
+		endif
+	endif
+end

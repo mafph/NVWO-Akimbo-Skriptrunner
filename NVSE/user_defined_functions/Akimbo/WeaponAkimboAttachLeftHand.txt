@@ -1,0 +1,89 @@
+Begin Function {ref rActor, ref akimboRef} ;Run to attach the left akimbo weapon
+ref rWeapLeft
+
+ref akimbo
+ref rWeapRight
+
+ref rAmmo
+ref rAmmoList
+
+int iSize
+int iNum
+
+		;Print "Setting up akimbo"
+
+		let akimbo = akimboRef.gbi
+
+		if IsFormValid akimboRef != 1
+			Print "Akimbo Invalid PistolWeaponAkimboAttachLeftHand"
+			return
+		endif
+
+		GetAkimboWeaponsAlt akimboRef rWeapLeft rWeapRight
+
+		if IsFormValid rWeapLeft != 1
+			Print "rWeapLeft Invalid PistolWeaponAkimboAttachLeftHand"
+			return
+		endif
+
+		let rAmmo = akimboRef.GetWeaponAmmo
+		if GetType rAmmo == 85
+
+			let iNum = 0
+			let rAmmoList = rAmmo
+			let rAmmo = ListGetNthForm rAmmoList iNum
+			rActor.AuxiliaryVariableSetRef "_rAkimboAmmoType" rAmmo 0
+
+			if rActor.GetItemCount rAmmo < 1
+
+				let iSize := ListGetCount rAmmoList
+				while (iNum += 1) < iSize
+					let rAmmo := ListGetNthForm rAmmoList iNum
+					if rActor.GetItemCount rAmmo > 0
+						rActor.AuxiliaryVariableSetRef "_rAkimboAmmoType" rAmmo 0
+						break
+					endif
+				loop
+
+			endif
+
+		else
+			rActor.AuxiliaryVariableSetRef "_rAkimboAmmoType" rAmmo 0
+		endif
+
+		let rAmmo = rWeapLeft.GetWeaponAmmo
+		if GetType rAmmo == 85
+
+			let iNum = 0
+			let rAmmoList = rAmmo
+			let rAmmo = ListGetNthForm rAmmoList iNum
+			rActor.AuxiliaryVariableSetRef "_rAkimboAmmoType" rAmmo 1
+
+			if rActor.GetItemCount rAmmo < 1
+
+				let iSize = ListGetCount rAmmoList
+				while (iNum += 1) < iSize
+					let rAmmo = ListGetNthForm rAmmoList iNum
+					if rActor.GetItemCount rAmmo > 0
+						rActor.AuxiliaryVariableSetRef "_rAkimboAmmoType" rAmmo 1
+						break
+					endif
+				loop
+
+			endif
+
+		else
+			rActor.AuxiliaryVariableSetRef "_rAkimboAmmoType" rAmmo 1
+		endif
+
+	if rActor == Player
+		
+	endif
+
+	rActor.LoadWeaponWithAmmo rWeapRight
+	rActor.LoadWeaponWithAmmo rWeapLeft
+
+	ref AttachLeftHandModel = CompileScript "Akimbo\WeaponAkimboAttachLeftHandModel.txt"
+	Call AttachLeftHandModel rActor akimboRef
+
+end

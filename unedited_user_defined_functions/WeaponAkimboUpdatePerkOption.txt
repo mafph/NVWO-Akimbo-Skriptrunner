@@ -1,0 +1,24 @@
+Begin Function {}
+	if PistolWorldOverhaulMCMQuest.bUsePerks == 0
+
+		if ( Player.HasPerk PistolPerkAkimbo ) && ( GetPerkFlag PistolPerkAkimbo 2 == 1 )
+			Player.RemovePerk PistolPerkAkimbo
+		endif
+		
+		SetPerkFlag PistolPerkAkimbo 1 0
+		SetPerkFlag PistolPerkAkimbo 2 0	;Remove Hidden
+
+		;Print "Perk Enabled"
+	
+	else 										;Use perks
+
+		if Player.HasPerk PistolPerkAkimbo != 1
+			SetPerkFlag PistolPerkAkimbo 1 1
+			Player.AddPerk PistolPerkAkimbo
+			SetPerkFlag PistolPerkAkimbo 2 1	;Hidden
+			;Print "Akimbo Perk Added"
+		endif
+		
+	endif
+	
+end

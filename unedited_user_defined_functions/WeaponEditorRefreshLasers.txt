@@ -1,0 +1,100 @@
+Begin Function {ref rWeapBase, ref rActor, array_var aMods, string_var suffix}
+string_var sSlot
+int iSize
+int iLaser
+
+int argument
+int actorIndex			;The actorIndex
+int iLaserNodeCount
+
+
+string_var sBlock
+string_var sDotPath
+
+ref rAttachment
+
+float fDistance
+
+
+;Loop Through All Attached Mods..................................................................
+
+	let iSize := Ar_Size aMods
+
+	if eval iSize > 0
+	
+		let sSlot := Ar_First aMods
+		while sSlot != Ar_BadStringIndex
+			
+			let rAttachment := aMods[sSlot]
+			let argument := -1
+			let iSize := GetTraitOverwriteSize rWeapBase "EmitLaser" rAttachment (sSlot) 2 	;Checks for multiple emitLasers from the same attachment. Each emitLaser has two arguments.
+			while (argument += 1) < iSize
+
+				if eval (GetTraitOverwriteType argument rWeapBase "EmitLaser" rAttachment (sSlot) 2) == 2
+
+					if iLaser == 0 ;DoOnce
+
+						let actorIndex := (Ar_Find rActor pWeapFunct.aLasers[0])
+						if eval actorIndex == Ar_BadNumericIndex
+							let actorIndex := Ar_Size pWeapFunct.aLasers[0]
+							Ar_Append pWeapFunct.aLasers[0] rActor
+							pWeapFunct.aLasers[1][actorIndex] := Ar_Construct "array" 	;For multiple lasers on the same attachment
+						endif
+
+						let iLaser := 1
+
+					endif
+
+					;Unpack Arguments............................................................................................
+
+						let sBlock := GetTraitOverwrite argument rWeapBase "EmitLaser" rAttachment (sSlot) 2
+						let sBlock := "WMSlot_" + sSlot + "\" + sBlock + suffix
+						let argument += 1
+
+						if eval (Ar_Find sBlock pWeapFunct.aLasers[1][actorIndex]) == Ar_BadnumericIndex
+
+							if eval (GetTraitOverwriteType argument rWeapBase "EmitLaser" rAttachment (sSlot) 2) == 2
+								let sDotPath := GetTraitOverwrite argument rWeapBase "EmitLaser" rAttachment (sSlot) 2
+							else
+								let sDotPath := "Weapon Smith\DefaultLaserDot.nif"
+							endif
+
+							let iLaserNodeCount := Ar_Size (pWeapFunct.aLasers[1][actorIndex])
+							let sDotPath := sBlock + "|*:" + $iLaserNodeCount + "*" + sDotPath
+
+							;Add laser node............................................................................................
+
+								Ar_Append pWeapFunct.aLasers[1][actorIndex] sBlock
+
+								AX_Set (sDotPath) "WS_AttachedLasers" (-1) rActor
+								if eval ModelHasBlock rActor ("##LaserDot:" + $iLaserNodeCount) != 1
+									;Print "Attach Laser: " + $sDotPath
+									if (Attachmodel rActor 3 (sDotPath)) == 0
+										Print "Error PistolWeaponEditorRefreshLasers Failed to attach laser: " + sDotPath
+									endif
+
+								endif
+
+						endif
+
+				endif
+
+			loop
+
+			let sSlot := Ar_Next aMods sSlot
+
+		loop
+
+	endif
+
+if iLaser == 1
+	SetOnKeyDownEventHandler pWeaponLaserOnKeyDown 1 PistolWorldOverhaulMCMQuest.kToggleLaser
+	Call pWeaponToggleLaser 0
+	if pWeapFunct.bLaserOff == 0
+		Call pWeaponToggleLaser 1
+	endif
+else
+	SetOnKeyDownEventHandler pWeaponLaserOnKeyDown 0
+endif
+
+end

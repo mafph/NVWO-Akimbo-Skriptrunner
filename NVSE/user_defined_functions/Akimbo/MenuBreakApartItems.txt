@@ -1,0 +1,15 @@
+begin Function {ref rWeap, ref rActor}
+ref rWeapLeft
+ref rWeapRight
+	if IsFormValid rWeap
+		if IsAkimbo rWeap ;Break appart................................
+			GetAkimboWeaponsAlt rWeap rWeapLeft rWeapRight
+			if eval IsFormValid rWeapRight && IsFormValid rWeapLeft
+				rWeap.RemoveMeIRAlt 1
+				rWeapLeft.MoveToContainer rActor
+				rWeapRight.MoveToContainer rActor
+				RefreshItemsList
+			endif
+		endif
+	endif
+end

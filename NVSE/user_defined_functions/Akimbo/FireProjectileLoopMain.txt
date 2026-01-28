@@ -1,0 +1,27 @@
+Begin Function {string_var sAnimation, string_var sAux}
+ref rActor
+int iAttack
+	if GetActiveMenuMode == 0
+
+		let rActor = GetSelfAlt
+
+		;Print "RunMain Loop: " + $(rActor.AuxTimerTimeLeft (sAux)) + " " + $sAux
+		if eval rActor.AuxTimerTimeLeft (sAux) == -1 || (rActor.GetAnimAction != -1 && rActor.GetAnimAction != 12)
+
+			let iAttack = rActor.AuxiliaryVariableGetFloat "*_IsAttacking"
+
+			if eval iAttack > 0
+				let iAttack -= 1
+				rActor.AuxiliaryVariableSetFloat "*_IsAttacking" iAttack
+				;Print "Attack: " + $iAttack
+			else
+				if eval rActor.IsAnimSequencePlaying sAnimation
+					rActor.DeactivateAnim (sAnimation) 0
+					;Print "Deactive: " + sAnimation + " " + sAnimation
+				endif
+			endIf
+			;Print "Stopping"
+			SetFunctionValue -1
+		endif
+	endif
+end

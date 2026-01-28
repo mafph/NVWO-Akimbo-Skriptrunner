@@ -1,0 +1,39 @@
+Begin Function {ref rWeap}
+
+	if ( Player.AuxiliaryVariableGetType "*_AkimboCurrentReload" != 0 )
+		;Print "Reload In Progress"
+		Player.AuxiliaryVariableSetFloat "*_AkimboCancelReload" 1
+		return
+	endif
+
+	if ( Player.AuxiliaryVariableGetFloat "*_IsAttacking" > 0 )
+		;Print "Attack In Progress"
+		Player.AuxiliaryVariableSetFloat "*_AkimboCancelAttack" 1
+		CallAfterSeconds 0.1 (Begin Function {}
+			Player.AuxiliaryVariableErase "*_AkimboCancelAttack"
+		end)
+		return
+	endif
+
+	let ref rAmmoOld := rWeap.GetWeaponAmmoType
+	let ref rAmmo := Player.FindWeaponAmmo rWeap rAmmoOld
+	if ( ( IsFormValid rAmmo ) && ( rAmmo != rAmmoOld ) )
+		Player.AuxiliaryVariableSetFloat "*_AkimboCantCancelReload" 1
+		if rAmmoOld
+			Player.AddItemAlt rAmmoOld ( rWeap.GetWeaponAmmoCount )
+		endif
+
+		rWeap.SetWeaponAmmoCount 0
+		rWeap.SetWeaponAmmoType rAmmo
+
+		SetFunctionValue rAmmo
+	
+	else
+
+		Print "PistolSwapAmmoOnWeapon Fail"
+		PrintVar rAmmoOld
+		PrintVar rAmmo
+
+	endif
+
+end

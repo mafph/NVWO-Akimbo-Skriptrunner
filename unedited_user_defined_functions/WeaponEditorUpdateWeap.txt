@@ -1,0 +1,65 @@
+Begin Function {ref rWeap}
+
+;Runs OnLoad, OnBuildMenu, and OnAttach
+
+ref rWeap
+ref rWeapBase
+ref rModifier
+ref rAttachment
+ref rWeapFirst
+
+int iNum
+int iSize
+int iNumP
+int iSizeP
+string_var sSlot
+string_var sString
+string_var sModEditorID
+string_var sWeapEditorID
+string_var sAux
+
+array_var aSlots
+array_var aReset
+array_var aMods
+
+
+
+if eval IsFormValid rWeap && IsReference rWeap
+
+	let rWeapBase := GetStaticForm rWeap
+	let rModifier := rWeap.GBI
+
+	if eval IsFormValid rModifier && HasExtendedMods rWeapBase
+
+		if eval IsFormInstance rWeap == 0
+			Call PistolWeaponEditorFirstCloneCreate rWeap
+			return
+		endif
+
+		let aMods := Call PistolWeaponsEditorGetEquippedMods rWeap
+	
+		;Print "Update attachments on refs................................................" + $rWeap
+
+		Call PistolWeaponEditorUpdateBaseModifiers rModifier rWeapBase aMods
+
+		if PistolWeaponAttachmentSystemQuest.Update == 1
+			let PistolWeaponAttachmentSystemQuest.Update := 0
+			rWeap.Update3d
+		endif
+
+		Call PistolWeaponEditorApplyVanillaModifiers rWeap
+		Call PistolWeaponEditorUpdateWeaponValue rWeap
+
+		Call PistolWeaponEditorMoveNode rWeap, rWeap, aMods, ""
+
+		;if eval ModelHasBlock rWeap "CellCamera" == 0
+			;InsertNode rWeap 3 "CellCamera"
+			;Print "Inserted: CellCamera"
+			;CubemapRefreshCell
+		;endif
+
+	endif
+
+endif
+
+end

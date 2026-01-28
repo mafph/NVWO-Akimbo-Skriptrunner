@@ -1,0 +1,58 @@
+Begin Function {}
+ref rActor
+ref rWeap
+
+string_var sAnimation
+string_var sNode
+
+float fTimer
+float interval
+
+int iRounds
+int fireRate
+int startLoop
+int iIndex
+
+int key
+
+float jumpTime
+
+	let rActor := GetSelfAlt
+	let iIndex := rActor.AuxiliaryVariableGetFloat "*_AkimboLoopIndex" 0
+	let sAnimation := rActor.AuxiliaryVariableGetString "*_AkimboLoopIndex" 1
+
+	let rWeap := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][0]
+	let sNode := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][1]
+	let key := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][2]
+
+	let iRounds := rWeap.GetWeaponAmmoCount
+	if eval rActor.GetDead == 0 && (IsKeyPressed key 2 || GetRightTrigger > 0) && (iRounds > 0 || GetDebugModeState 0) && (rActor.AuxiliaryVariableGetType "*_AkimboCancelAttack") == 0 && (rActor.GetAnimAction == -1 || rActor.GetAnimAction == 12)
+
+		let fTimer := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][3]
+		let fTimer += GetSecondsPassed
+		let fireRate := rWeap.GetFireRate
+		let interval := 1 / fireRate
+		if eval fTimer >= interval
+			Call PistolFireProjectile rActor sAnimation rWeap sNode
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][3] := 0
+		else
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][3] := fTimer 
+		endif
+
+	else
+
+		let rWeap := rWeap.GBI
+
+		if eval iRounds == 0 && GetDebugModeState 0 != 1
+			PlaySound (GetWeaponSound rWeap 4)
+		endif
+
+		Ar_Erase PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex], sAnimation
+		if eval (Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex]) <= 0
+			Ar_Erase PistolWeaponAkimboQuest.aAkimboFireLoop iIndex
+		endif
+		SetGameMainLoopCallback PistolFireProjectileLoopRight 0
+
+	endif
+
+end

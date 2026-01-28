@@ -1,0 +1,53 @@
+begin Function {int iKey}
+int	iKey
+int iEquip
+int iBit
+
+ref rWeap
+ref rWeapLeft
+ref rWeapRight
+ref akimbo
+
+	if GetActiveMenuMode == 1002
+		let rWeap := GetSelectedItemRef
+		if IsFormValid rWeap
+			if IsAkimbo rWeap ;Break appart................................
+				SplitAkimbo (rWeap.GBI) rWeapLeft rWeapRight
+				if eval IsFormValid rWeapRight && IsFormValid rWeapLeft
+					rWeapLeft.MoveToContainer Player
+					rWeapRight.MoveToContainer Player
+					RefreshItemsList
+				endif
+			else ;Combine..............................................................
+				let rWeapLeft := rWeap
+				if rWeapLeft.GetRefCount > 1
+					let rWeapRight := rWeapLeft
+				else
+					let rWeapRight := Player.GetEquippedWeaponRef
+					let iEquip := 1
+				endif
+	
+				if eval (iEquip == 0 || rWeapLeft.IsEquipped != 1) && HasAkimboSet rWeapRight rWeapLeft
+					if eval (AX_GetType "DisableAkimbo" 0 (rWeapLeft.GBI)) == 0 || (AX_GetType "DisableAkimbo" 0 (rWeapRight.GBI)) == 0
+						return
+					endif
+
+					let akimbo := CreateAkimboInstance rWeapRight rWeapLeft "NVWO"
+					let iBit := GetWeaponFlags2 akimbo
+					let iBit := SetBit iBit 0
+					SetWeaponFlags2 iBit, akimbo
+				
+					if rWeapLeft == rWeapRight
+						rWeapRight.RemoveMeIRAlt 2
+					else
+						rWeapRight.RemoveMeIRAlt 1
+						rWeapLeft.RemoveMeIRAlt 1
+					endif
+	
+					Player.AddItemAlt akimbo 1 100 iEquip
+					RefreshItemsList
+				endif
+			endif
+		endif
+	endif
+end

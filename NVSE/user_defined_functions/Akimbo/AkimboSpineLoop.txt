@@ -1,0 +1,26 @@
+Begin Function {}
+int bFirstPerson
+float zTop
+float yCam
+float zCam
+
+	Print "Spine Loop"
+	;GetPlayerCameraRotation zTop yCam zCam
+
+	let yCam := RadToDeg yCam
+	zTop := yCam
+	zTop -= 180
+    if zCam > 0
+		zTop *= -1;
+	endif
+
+	yCam *= -1
+
+    if zCam > 0
+		yCam = 180 - yCam;
+	endif
+
+	yCam = clamp yCam (30) 130
+	;Player.SetNifBlockRotation "Bip01 Spine" 90 0 yCam 0 bFirstPerson
+
+end

@@ -1,0 +1,21 @@
+Begin Function {}
+
+	;Call ( CompileScript "Akimbo\WeaponAkimboUpdatePerkOption.txt" )
+	let aArray = AuxiliaryVariableGetAsArray "*_AkimboActors" PistolReplaceAuxDummy
+	int iNum = -1
+	int iSize = Ar_Size aArray
+	while (iNum += 1) < iSize
+
+		ref rActor = aArray[iNum]
+		if ( IsFormValid rActor ) && ( IsAkimbo ( rActor.GetEquippedWeapon ) == 0 )
+			;Call PistolWeaponEditorRemoveViaAux rActor
+		endif
+
+	loop
+
+	;Print "Setting Up Weapon Akimbo System"
+
+	;SetOnKeyDownEventHandler PistolMenuCombineItems 1 38
+	;SetOnMouseoverChangeEventHandler PistolMenuCombineItemsCheck 1 1002
+
+end

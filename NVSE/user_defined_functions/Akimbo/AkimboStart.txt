@@ -1,0 +1,14 @@
+Begin Function {}
+
+	;Build Akimbos..................................................................................
+
+	PrintC "Setting Up Weapon Akimbo System"
+	
+	SetOnEquipAlt 1 ( CompileScript "Akimbo\WeaponAkimboOnPreEquip.txt" ) "1" 40    ;Runs after weapons smith
+	
+	SetEventHandler "OnActorEquip" ( CompileScript "Akimbo\WeaponAkimboOnEquip.txt" )
+	
+	SetEventHandler "OnDrop" ( CompileScript "Akimbo\WeaponAkimboOnDrop.txt" )
+
+	
+end

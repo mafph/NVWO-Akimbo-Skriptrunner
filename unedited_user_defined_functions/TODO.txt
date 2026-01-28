@@ -1,0 +1,40 @@
+Akimbostart l 14
+;SetOnInstanceDeconstruct 1 ( CompileScript "Akimbo\AkimboOnInstanceDeconstruct.txt" ) "NVWO"
+
+WeaponAkimboOnEquip	l 6?
+Call PistolUDFKeyKontrolSystem 14 0
+
+preequip l12
+
+ref rCheckReq = CompileScript "Akimbo\WeaponAkimboCheckReq.txt"
+if (Call rCheckReq Equipper rWeap rWeapRight rWeapLeft 1) == 1
+
+else
+	Call PistolMenuBreakApartItems rAkimbo rActor
+	PlaySound UIVATSEnterFail 1
+	SetFunctionValue 1
+endif
+
+attachLeftHand l 80
+Call PistolUDFKeyKontrolSystem 14 1
+
+
+AttachLeftHandModel 
+l28
+AuxiliaryVariableSetRef "*_AkimboActors" rActor -1 PistolReplaceAuxDummy
+l50
+let sSuffix = Call PistolAkimboGetSuffix rAkimboBase
+l95
+Call PistolWeaponEditorClearLaserNodes rActor
+let aMods = Call PistolWeaponsEditorGetEquippedMods rWeapRight
+Call PistolWeaponEditorRefreshLasers rWeapRightBase rActor aMods ""
+let aMods = Call PistolWeaponsEditorGetEquippedMods rWeapLeft
+Call PistolWeaponEditorRefreshLasers rWeapLeftBase rActor aMods sSuffix
+
+fixes
+		;CallAfterSeconds 0.16 PistolWeaponAkimboFixProjectileNode 1 rActor rAkimboBase
+		Call PistolWeaponEditorUpdateActor rActor akimboRef
+		
+FireProjectile
+l.94
+rActor.Call PistolWeaponAkimboDamageHealthV1 0.1 rWeap

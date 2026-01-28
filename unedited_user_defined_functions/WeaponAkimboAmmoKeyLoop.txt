@@ -1,0 +1,48 @@
+begin Function {}
+
+	if Player.AuxiliaryVariableGetType "*_AkimboCurrentReload" != 0
+		Player.AuxiliaryVariableSetFloat "*_AkimboCancelReload" 1
+		return
+	endif
+	
+	if IsKeyPressed 3 2
+		return
+	endif
+
+	if AuxTimerTimeLeft "*_ammoKeyHeld" == -1
+
+		let ref rWeap = Player.GetEquippedWeapon
+		rWeap = GetAkimboWeapons rWeap 0
+		let ref rAmmo = Call (CompileScript "Akimbo\SwapAmmoOnWeapon.txt") rWeap
+		if IsFormValid rAmmo
+			Call PistolWeaponAkimboReloadMag Player 0 1 1
+			MessageEx ("Swaping right ammo to " + (LNGetName rAmmo))
+		endif
+
+		SetGameMainLoopCallback (CompileScript "Akimbo\WeaponAkimboAmmoKeyLoop.txt") 0
+
+		return
+
+	endif
+
+	
+
+	;if Player.AuxiliaryVariableGetType "*_AkimboCurrentReload" != 0
+	
+	;	Player.AuxiliaryVariableSetFloat "*_AkimboCancelReload" 1
+	
+	;else
+
+	;	let ref rWeap = Player.GetEquippedWeapon
+	;	rWeap = GetAkimboWeapons rWeap 1
+	;	let ref rAmmo = Call (CompileScript "Akimbo\SwapAmmoOnWeapon.txt")  rWeap
+	;	if IsFormValid rAmmo
+	;		Call PistolWeaponAkimboReloadMag Player 1 0 1
+	;		MessageEx ("Swaping left ammo to " + (LNGetName rAmmo))
+	;	endif
+
+	;endif
+
+	;SetGameMainLoopCallback (CompileScript "Akimbo\WeaponAkimboAmmoKeyLoop.txt") 0
+
+end

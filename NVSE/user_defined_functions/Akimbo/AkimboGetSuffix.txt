@@ -1,0 +1,12 @@
+Begin Function {ref rWeapClone}
+
+	;Print "Get Akimbo Suffix: " + $(GetTraitOverwriteType 0 rWeapClone "AkimboSuffix")
+	if GetTraitOverwriteType 0 rWeapClone "AkimboSuffix" == 2
+		let string_var sSuffix = GetTraitOverwrite 0 rWeapClone "AkimboSuffix"
+	else
+		let string_var sSuffix = "_AL"
+	endif
+
+	SetFunctionValue sSuffix
+
+end

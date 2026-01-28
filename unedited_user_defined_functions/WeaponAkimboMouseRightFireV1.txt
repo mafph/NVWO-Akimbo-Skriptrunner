@@ -1,0 +1,87 @@
+Begin Function {int iKey}
+
+	let ref rAkimboBase = Player.GetEquippedWeapon
+
+	;Print "Right Fire"
+
+	if eval Player.IsWeaponOut == 0
+		
+		EnableControl 4
+		tc 4
+		
+		CallAfterSeconds 0.1 (begin function {} DisableControl 4 end)
+		return
+	endif
+
+	;Weapon is out........................................................................
+
+	let ref rWeapRight = GetAkimboWeapons rAkimboBase 0
+	let int iRounds = rWeapRight.GetWeaponAmmoCount
+
+	if IsThirdPerson
+		Player.OverrideAnimatedNodePriority 0 "Bip01 Spine"
+		SetGameMainLoopCallback PistolAkimboSpineLoop 1 0 1
+	endif
+
+	if eval iRounds > 0 || GetDebugModeState 0
+
+		if eval IsPC1stPerson
+			let array_var animGroup := Player.GetAnimationsByAnimGroup AttackRight 1		;First person
+		else
+			let array_var animGroup := Player.GetAnimationsByAnimGroup AttackRight 0
+		endif
+
+		if eval (Ar_Size animGroup) > 0
+			let sString = animGroup[0]
+		else
+			return
+		endif
+
+		if GetIsAutomatic rAkimboBase
+
+			let int iIndex := Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop
+			if eval iIndex == -1
+				let PistolWeaponAkimboQuest.aAkimboFireLoop := Ar_Construct "array"
+				let PistolWeaponAkimboQuest.aAkimboFireLoop[0] := Ar_Construct "stringmap"
+				let iIndex := 0
+			endif
+
+			if eval (Player.AuxiliaryVariableGetType "*_AkimboLoopIndex" 0) == 1
+				let iIndex := Player.AuxiliaryVariableGetFloat "*_AkimboLoopIndex" 0
+			else
+				Player.AuxiliaryVariableSetFloat "*_AkimboLoopIndex" iIndex 0
+			endif
+
+			if eval (Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex]) == -1
+				let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex] := Ar_Construct "stringmap"
+			endif
+
+			Player.AuxiliaryVariableSetString "*_AkimboLoopIndex" $sString 1
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sString] := Ar_Construct "array"
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sString][0] := rWeapRight
+
+			;Print "ProjectileNodeFix....................................."
+			if eval (GetTraitOverwriteSize rAkimboBase "bAnimatedProjectileNodeFix") > 0
+				let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sString][1] := "ProjectileNodeFix"
+			else
+				let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sString][1] := "ProjectileNode"
+			endif
+
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sString][2] := 257	;Key bind
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sString][3] := 0
+
+			Player.SetGameMainLoopCallback PistolFireProjectileLoopRight 1 0 1
+
+			else
+			;Print "Single Fire"
+			;Print "ProjectileNodeFix....................................."
+			if eval (GetTraitOverwriteSize rAkimboBase "bAnimatedProjectileNodeFix") > 0
+				Call PistolFireProjectile Player sString rWeapRight "ProjectileNodeFix"
+			else
+				Call PistolFireProjectile Player sString rWeapRight "ProjectileNode"
+			endif
+		endif
+		else
+			PlaySound (GetWeaponSound (rWeapRight.GBI) 4)
+		endif
+end

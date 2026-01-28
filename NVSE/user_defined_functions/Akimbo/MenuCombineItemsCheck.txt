@@ -1,0 +1,47 @@
+begin Function {int iMenuID}
+int iEquip
+ref rWeap
+ref rWeapLeft
+ref rWeapRight
+ref akimbo
+
+	if iMenuID == 1002
+	
+		let rWeap := GetSelectedItemRef
+
+		if IsFormValid rWeap
+
+			if IsAkimbo rWeap ;Break apart................................
+
+				GetAkimboWeaponsAlt rWeap rWeapLeft rWeapRight
+
+				if eval IsFormValid rWeapRight && IsFormValid rWeapLeft
+
+					;ClearMessageQueue
+					;MessageEx "Press L to break apart"
+
+				endif
+
+			else ;Combine..............................................................
+
+				let rWeapLeft := rWeap
+				if rWeapLeft.GetRefCount > 1
+					let rWeapRight := rWeapLeft
+				else
+					let rWeapRight := Player.GetEquippedWeaponRef
+					let iEquip := 1
+				endif
+	
+				if eval (iEquip == 0 || rWeapLeft.IsEquipped != 1) && HasAkimboSet rWeapRight rWeapLeft
+
+					if eval (AX_GetType "DisableAkimbo" 0 (rWeapLeft.GBI)) == 0 || (AX_GetType "DisableAkimbo" 0 (rWeapRight.GBI)) == 0
+						return
+					endif
+
+					ClearMessageQueue
+					MessageEx ("Press L to combine " + rWeapLeft.LNGetName + " & " + rWeapRight.LNGetName)
+				endif
+			endif
+		endif
+	endif
+end

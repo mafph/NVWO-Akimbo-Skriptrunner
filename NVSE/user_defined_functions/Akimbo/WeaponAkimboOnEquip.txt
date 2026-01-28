@@ -1,0 +1,13 @@
+Begin Function {ref Equipper, ref rWeap}
+
+	CallAfterSeconds 0 (Begin Function {} ;Prevents Clear from being called right after on load for some reason.
+	
+		if IsAkimbo rWeap
+			SetEventHandler "OnActorUnEquip" ( CompileScript "Akimbo\WeaponAkimboOnClearAkimboData.txt" ) "first"::Equipper
+			
+			Call CompileScript "Akimbo\PrepareFireLoop.txt" Equipper rWeap
+		endif
+	
+	end) 1
+	
+end

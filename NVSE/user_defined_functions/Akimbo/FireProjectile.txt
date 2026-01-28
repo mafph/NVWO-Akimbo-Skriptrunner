@@ -1,0 +1,44 @@
+Begin Function {ref rActor, string_var sAnimation, ref rWeap, string_var sFireNode}
+ref rWeapBase
+int iRounds
+float easeTime
+
+;Print "Firing node: " + $sFireNode
+
+	if GetActiveMenuMode != 0
+		return 
+	endIf
+	
+	let easeTime = 0
+	if eval rActor.GetAnimAction != -1 && rActor.GetAnimAction != 12
+		if rActor.IsAnimSequencePlaying sAnimation
+			rActor.DeactivateAnim sAnimation easeTime
+		endif
+		return
+	endif
+
+	if rActor.AuxiliaryVariableGetType "*_AkimboCurrentReload" != 0
+		rActor.AuxiliaryVariableSetFloat "*_AkimboCancelReload" 1
+		return
+	endif
+
+	if eval sAnimation != ""
+		ref rFixAnimation = CompileScript "Akimbo\FixAnimation.txt"
+		Call rFixAnimation rActor sAnimation
+	endif
+
+	let rWeapBase = rWeap.GBI
+	rActor.FireWeaponEx rWeapBase (sFireNode)
+		
+	let iRounds = rWeap.GetWeaponAmmoCount
+	let iRounds -= GetAmmoUse rWeapBase
+	rWeap.SetWeaponAmmoCount iRounds
+
+	let iRounds = rActor.GetCurrentAmmoRounds
+	let iRounds -= GetAmmoUse rWeapBase
+	rActor.SetCurrentAmmoRounds iRounds
+
+	rActor.Call (CompileScript "WeaponAkimboDamageHealthV1.txt") 0.1 rWeap
+
+end
+

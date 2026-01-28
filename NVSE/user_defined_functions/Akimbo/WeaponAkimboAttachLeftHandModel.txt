@@ -1,0 +1,112 @@
+Begin Function {ref rActor, ref akimboRef}
+
+int iBit
+int iNum
+int iSystem
+
+string_var sSuffix
+string_var sStringLink
+string_var sString
+string_var sBlock
+
+string_var leftHand
+
+ref rWeapRight
+ref rWeapLeft
+ref rWeapLeftBase
+ref rWeapRightBase
+
+ref rAkimboBase
+ref rAkimboInst
+
+array_var aMods
+	;Print "Attaching left hand Model"
+	if IsAkimbo akimboRef
+
+		
+		GetAkimboWeaponsAlt akimboRef rWeapLeft rWeapRight
+
+		let rAkimboBase = GetStaticForm akimboRef
+		let rAkimboInst = akimboRef.GBI
+
+		let rWeapLeftBase = rWeapLeft.GBO
+
+	;Print "Left attachments....................................."
+
+		let iBit = rWeapLeft.GetWeaponRefModFlags
+		let sStringLink = GetWeaponModel rWeapLeftBase iBit
+
+		;Print "Attach left hand model: " + $sStringLink 
+	
+	;Right attachments
+
+		let iBit = rWeapRight.GetWeaponRefModFlags
+		akimboRef.SetWeaponRefModFlags iBit
+
+	;....................................................................................
+		ref rSuffix = CompileScript "Akimbo\AkimboGetSuffix.txt"
+		let sSuffix = Call rSuffix rAkimboBase
+
+		let iSystem = GetFormTrait 0 rAkimboBase "Version"
+		if iSystem == 2
+
+			let sBlock = "Weapon2"
+			if HasRuntimeNode rActor "Bip01 L Hand|Weapon2" 1 == 0
+				InsertNode rActor 3 "Bip01 L Hand|Weapon2"
+				;Print "Insert Node: " + $(InsertNode rActor 3 "Bip01 L Hand|Weapon2")
+				AX_Set (sBlock) "WS_AttachedNodes" (-1) rActor
+			endif
+
+			let sString = sBlock + "|*" + sSuffix + "*"
+
+		else
+
+			let sBlock = "Akimbo"
+			if HasRuntimeNode rActor "Weapon|Akimbo" 1 == 0
+				InsertNode rActor 3 "Weapon|Akimbo"
+				;Print "Insert Node: " + $(InsertNode rActor 3 "Weapon|Akimbo")
+				AX_Set (sBlock) "WS_AttachedNodes" (-1) rActor
+			endif
+
+			let sString = sBlock + "|*" + sSuffix + "*"
+
+		endif
+
+		;let leftHand = sString + sStringLink
+		let leftHand = sString
+		rActor.AuxiliaryVariableSetString "*_LeftHandNifDirectory" (leftHand) 0
+
+		;PrintVar leftHand
+		;Print $(AttachFormModel rActor (rWeapLeft.GBI) 3 (leftHand))
+
+		;PrintVar leftHand
+
+		AttachFormModel rActor (rWeapLeft.GBI) 3 (leftHand)
+		
+	;Attachments......................................................................................................
+
+		let rWeapLeftBase = rWeapLeft.GBI
+		let rWeapRightBase = rWeapRight.GBI
+
+ 	;Copy to the akimbo base for the right hand weapon.
+		CopyRuntimeNodes rAkimboInst rWeapRightBase 1
+
+		;Print "Akimbo Refresh Lasers......................................"
+
+			
+	;Projectile node...........................................................................................................
+
+		let sString = "ProjectileNode" + sSuffix
+		int iStringcompare 
+		let iStringcompare = (Sv_compare "ProjectileNode_AL", sString)
+		if (iStringcompare != 0)
+			;Print "Renaming projectile node"
+			rActor.RenameNifBlock (sString) "ProjectileNode_AL"
+		endif
+
+	;Fixes...........................................................................................................
+
+
+	endif
+
+end

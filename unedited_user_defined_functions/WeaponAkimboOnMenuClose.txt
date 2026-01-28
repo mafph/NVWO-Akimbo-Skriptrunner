@@ -1,0 +1,11 @@
+Begin Function {}
+
+	ref rAkimbo = Player.GetEquippedWeapon
+	if eval IsAkimboForm rAkimbo == 1
+		
+		Call PistolUDFKeyKontrolSystem 14 1
+		SetGameMainLoopCallback (CompileScript "Akimbo\WeaponAkimboOnMenuClose.txt") 0
+	
+	endif
+
+end

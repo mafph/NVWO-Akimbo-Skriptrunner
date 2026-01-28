@@ -1,0 +1,17 @@
+Begin Function {ref rWeap, ref Equipper}
+	ref rWeapRight
+	ref rWeapLeft
+
+	let ref rPreWeap = Equipper.GetEquippedWeaponRef
+	if IsAkimbo rPreWeap
+		ref rAkimboClearData = CompileScript "Akimbo\WeaponAkimboOnClearAkimboData.txt"
+		Call rAkimboClearData Equipper rPreWeap
+	endif
+
+	if IsAkimbo rWeap
+		GetAkimboWeaponsAlt rWeap rWeapLeft rWeapRight
+		ref AttachLeftHand = CompileScript "Akimbo\WeaponAkimboAttachLeftHand.txt"
+		Call AttachLeftHand Equipper rWeap
+	endif
+
+end

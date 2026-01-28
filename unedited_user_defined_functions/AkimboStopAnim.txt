@@ -1,0 +1,17 @@
+;For sprinting mods like jam. SetOnAnimActionEventHandler and SetOnPlayGroupEventHandler don't seem to work on JAM at the time of making this.
+
+begin Function {}
+	let ref rActor = GetSelfAlt
+	let array_var aArray = rActor.GetPlayingAnimSequencePaths
+
+	if eval (Ar_Size aArray) > 0
+		let string_var sString = aArray[1]
+		
+		if eval (SV_Find "Sprint", sString) != -1
+			if eval rActor.AuxiliaryVariableGetType "*_AkimboCurrentReload" != 0
+				Print "Sprint Cancel Reload"
+				Player.AuxiliaryVariableSetFloat "*_AkimboCancelReload" 1
+			endif
+		endif
+	endif
+end

@@ -1,0 +1,17 @@
+begin Function {ref rActor, string_var sAnim}
+
+	if eval ((rActor == Player && IsThirdPerson == 0) || rActor.IsSneaking || rActor.IsWeaponOut == 0)
+
+		if eval (rActor.HasAnimatedNodeOverride "Bip01 Spine")
+			rActor.RemoveAnimatedNodePriority "Bip01 Spine"
+			SetGameMainLoopCallback PistolAkimboSpineLoop 0
+			Print "Stop Node Lock: " + $rActor + " " + $sAnim
+		endif
+
+	elseif eval (rActor.HasAnimatedNodeOverride "Bip01 Spine") == 0
+		rActor.OverrideAnimatedNodePriority 0 "Bip01 Spine"
+		SetGameMainLoopCallback PistolAkimboSpineLoop 1 0 1
+		Print "Start Node Lock"
+	endif
+
+end

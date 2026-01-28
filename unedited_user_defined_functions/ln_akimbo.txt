@@ -1,0 +1,2 @@
+;Call (CompileScript "Akimbo\AkimboStartOnLoad.txt")
+;Call pWeapFunctionOnLoad

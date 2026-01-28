@@ -1,0 +1,37 @@
+; === Safely Retrieve and Sanitize INI Setting ===
+;
+; For performance and stability, follow these steps when reading INI values:
+;
+; 1. Use ShowOff's Cached INI functions to prevent reading from disk on every call.
+; 2. Include a default value in case the INI hasn't been created yet.
+; 3. Clamp the result to the expected numeric range to handle invalid user edits.
+; 4. Floor the value if an integer is required.
+;
+; --- Example: Reading a setting that must be a whole number between 1 and 5, with a default value of 2 ---
+; Goo1.AuxVarSetFlt "*_MCMExtenderExample" Floor ( Clamp ( GetINIFloat_Cached "OptionTypes:iIntegerSlider" "MCMExtenderExample.ini" 2 ) 0 5 ) 0
+;
+; - GetINIFloatOrDefault_Cached: https://geckwiki.com/index.php?title=GetINIFloatOrDefault_Cached
+; - Clamp: https://geckwiki.com/index.php?title=Clamp
+; - Floor: https://geckwiki.com/index.php?title=Floor
+
+; For best performance, store MCM variables in Temporary-Public Auxiliary Variables.
+; Because they are session persistent, you only need to read settings from the INI file once on game restart, not on every save load.
+; Note: If you store multiple options in a single Auxiliary Variable, you must use consecutive indexes starting from 0.
+
+; Update "Option Type" menu variables
+Goo1.AuxVarSetFlt "*_iControlType" (GetINIFloat_Cached "Controls:kAkimboLeftFire" "Akimbo.ini" 1)
+Goo1.AuxVarSetFlt "*_kAkimboLeftFire" (GetINIFloat_Cached "Controls:kAkimboLeftFire" "Akimbo.ini" 256)
+Goo1.AuxVarSetFlt "*_kAkimboRightFire" (GetINIFloat_Cached "Controls:kAkimboRightFire" "Akimbo.ini" 257)
+Goo1.AuxVarSetFlt "*_kAkimboSwitchWeapons" (GetINIFloat_Cached "Controls:kAkimboSwitchWeapons" "Akimbo.ini" 16)
+Goo1.AuxVarSetFlt "*_kAkimboEditNode" (GetINIFloat_Cached "Controls:kAkimboEditNode" "Akimbo.ini" 49)
+Goo1.AuxVarSetFlt "*_bAkimboAllowADS" (GetINIFloat_Cached "Akimbo:bAkimboAllowADS" "Akimbo.ini" 1)
+Goo1.AuxVarSetFlt "*_bAkimboIndependentAiming" (GetINIFloat_Cached "Akimbo:bAkimboIndependentAiming" "Akimbo.ini" 1)
+Goo1.AuxVarSetFlt "*_bAkimboIndependentFiring" (GetINIFloat_Cached "Akimbo:bAkimboIndependentFiring" "Akimbo.ini" 1)
+Goo1.AuxVarSetFlt "*_bUsePerks" (GetINIFloat_Cached "Akimbo:bUsePerks" "Akimbo.ini" 0)
+
+If (FileExists "config\Akimbo.ini") == 0
+	SaveCachedIniFile Akimbo.ini
+EndIf
+
+; Clear your INI cache after you're are finished updating.
+CloseFileSO "Akimbo.ini" 1

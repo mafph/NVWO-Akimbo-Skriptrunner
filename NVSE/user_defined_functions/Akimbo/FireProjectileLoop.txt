@@ -1,0 +1,27 @@
+Begin Function {}
+
+int key
+	ref rActor = GetSelfAlt
+	Let array_var aFireSeq = rActor.AuxVarGetAsArr "AkimboFireSeq"
+	
+	if eval (Ar_Size aFireSeq) <= 0 
+		PrintC "No FireSeq!"
+		return
+	endif
+	
+	string_var sAnimationLeft = aFireSeq[0]
+	string_var sAnimationRight = aFireSeq[1]
+	int autoLeft = aFireSeq[sAnimationLeft][5]
+	int autoRight = aFireSeq[sAnimationRight][5]
+	
+	if eval autoLeft == 1
+		Call CompileScript "Akimbo\FireLoop.txt" sAnimationLeft
+	endIf
+	
+	if eval autoRight == 1
+		Call CompileScript "Akimbo\FireLoop.txt" sAnimationRight
+	endIf
+	
+	ref FireProjectileLoop = CompileScript "Akimbo\FireProjectileLoop.txt"
+	SetGameMainLoopCallback FireProjectileLoop 0
+end

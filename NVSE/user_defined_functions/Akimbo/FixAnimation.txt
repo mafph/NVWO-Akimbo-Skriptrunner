@@ -1,0 +1,50 @@
+Begin Function {ref rActor, string_var sAnimation}
+int textKey
+float easeTime
+float jumpTime
+array_var aSubstring
+string_var sString
+let array_var mAttributes = GetAnimationAttributes (sAnimation)
+
+	if eval (Ar_Size mAttributes) <= 0
+		Print "Error GetAnimationAttributes returned null on for anim: " + sAnimation
+		return
+	endif
+
+	if rActor.IsAnimSequencePlaying (sAnimation)
+	textKey = Ar_Find "start", mAttributes["textKeyValues"]
+		if textKey != Ar_BadNumericIndex
+			jumpTime = mAttributes["textKeyTimes"][textKey]
+		endif
+	
+		rActor.SetAnimCurrentTime (sAnimation) jumpTime
+	
+	else
+		textKey = Ar_Find "blendIn", mAttributes["textKeyValues"]
+		if textKey != Ar_BadNumericIndex
+			easeTime = mAttributes["textKeyTimes"][textKey]
+		endif
+	
+		if rActor == Player && IsPC1stPerson
+			rActor.ActivateAnim (sAnimation) 1 1 1 1 easeTime
+		else
+			rActor.ActivateAnim (sAnimation) 0 1 1 1 easeTime
+		endif
+	
+		let int iAttack = AuxiliaryVariableGetFloat "*_IsAttacking"
+		iAttack += 1
+		rActor.AuxiliaryVariableSetFloat "*_IsAttacking" iAttack
+	
+	endif
+	
+	textKey = Ar_Find "end", mAttributes["textKeyValues"]
+	if eval textKey != Ar_BadNumericIndex
+		let jumpTime = mAttributes["textKeyTimes"][textKey]
+	endif
+
+	aSubstring = Sv_Split sAnimation "\"
+	sString = "*_Attack_" + (aSubstring[(Ar_Last aSubstring)])
+
+	rActor.CallLoop 0 CompileScript "Akimbo\FireProjectileLoopMain.txt" sAnimation sString
+	AuxTimerStart (sString) jumpTime
+End

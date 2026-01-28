@@ -1,0 +1,14 @@
+;Expands weapon functionality
+;Moved to PistolNVWOSaveKeyConfigToINI
+
+Begin Function {}
+
+	let pWeapFunct.aLasers := Ar_Construct "array"
+	let pWeapFunct.aLasers[0] := Ar_Construct "array"
+	let pWeapFunct.aLasers[1] := Ar_Construct "array"
+
+	;SetOnKeyDownEventHandler pWeaponLaserOnKeyDown 1 PistolWorldOverhaulMCMQuest.kToggleLaser
+	;SetEventHandler "OnControlDown:6" pWeaponLaserOnKeyDown
+	;SetEventHandler "OnControlUp:6" pWeaponLaserOnKeyDown
+
+end

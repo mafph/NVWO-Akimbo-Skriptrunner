@@ -1,0 +1,229 @@
+{
+	"modName": "MCMExtenderExample",
+	"displayName": "$TranslatedModName",
+	"description": "This is the description of MCM Extender's example mod.",
+	"saveFile": "MCMExtenderExample.ini",
+	"minMCMVersion": 1.30,
+	"minModVersion": 1.00,
+	"requirements": [
+		{ "type": "file", "file": "NVSE/plugins/scripts/gr_akimboMCM.txt" }
+	],
+	"submenus": {
+		"0": {
+			"listTitle": "Submenu 1",
+			"pageTitle": "Submenu 1: all types",
+			"columns": 1,
+			"enable": 1,
+			"active": 1,
+			"options": {
+				"1": {
+					"title": "Example Image Display",
+					"enable": 1,
+					"type": 0,
+					"image": {
+						"filename": "Interface/MCMExtender/ExampleLogo.dds",
+						"width": 700,
+						"height": 350,
+						"offsetX": 0,
+						"offsetY": 0,
+						"systemcolor": 5
+					}
+				}
+			}
+		},
+		"1": {
+			"listTitle": "$TranslatedSubmenuList",
+			"pageTitle": "$TranslatedSubmenuPage",
+			"columns": 1,
+			"enable": 1,
+			"options": {
+				"1": {
+					"title": "Type 0: Header or Image",
+					"enable": 1,
+					"type": 0,
+					"mouse": "A non-interactive title displayed in a large font. Can also be used to display a .dds image file by using the `filename` key."
+				},
+				"2": {
+					"title": "$TranslatedOptionTitle",
+					"enable": 1,
+					"type": 1,
+					"mouse": "$TranslatedOptionMouseover",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 0, "default": 0, "configINI": "OptionTypes:iDropdown" }],
+					"strings": [ "String 0", "$TranslatedListEntry", "String 2", "String 3" ]
+				},
+				"3": {
+					"title": "Type 2: Integer Slider",
+					"type": 2,
+					"enable": 1,
+					"mouse": "Slider for selecting a whole number within a defined range.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 1, "default": 50, "configINI": "OptionTypes:iIntegerSlider" }],
+					"scale": { "valueDecimal": 0, "valueIncrement": 5, "valueMin": 0, "valueMax": 100, "suffix": "%" },
+					"prefix": "Percentage: ",
+					"suffix": "%"
+				},
+				"4": {
+					"title": "Type 2.5: Float Slider",
+					"type": 2.5,
+					"enable": 1,
+					"mouse": "Slider for selecting a floating-point number within a defined range.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 2, "default": 2.5, "configINI": "OptionTypes:fFloatSlider" }],
+					"scale": { "valueDecimal": 1, "valueIncrement": 0.1, "valueMin": 0, "valueMax": 5 },
+					"prefix": "Float: "
+				},
+				"5": {
+					"title": "Type 3: Keybind",
+					"type": 3,
+					"enable": 1,
+					"mouse": "Control that prompts the user to press a key, returning a DirectX scancode.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 3, "default": 45, "configINI": "OptionTypes:iKeybind" }]
+				},
+				"6": {
+					"title": "Type 4: On/Off Toggle",
+					"type": 4,
+					"enable": 1,
+					"mouse": "Simple text toggle that switches between \"On\" and \"Off\"",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 4, "default": 1, "configINI": "OptionTypes:iOnOffToggle" }]
+				},
+				"7": {
+					"title": "Type 5: Checkbox",
+					"type": 5,
+					"enable": 1,
+					"mouse": "Toggle that uses a checkmark box. It is functionally identical to Type 4.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 5, "default": 1, "configINI": "OptionTypes:iCheckbox" }]
+				},
+				"8": {
+					"title": "Type 6: Custom Toggle",
+					"type": 6,
+					"enable": 1,
+					"mouse": "Toggle that switches between custom \"textOn\" and \"textOff\" strings. It is functionally identical to Type 4.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 6, "default": 1, "configINI": "OptionTypes:iCustomToggle" }],
+					"textOff": "Completely Off",
+					"textOn": "Totally On"
+				},
+				"9": {
+					"title": "Type 7: Static Text",
+					"type": 7,
+					"enable": 1,
+					"mouse": "Non-interactive text label that displays a string.",
+					"TODO": "Potentially set up some code to allow text input here",
+					"string": "String"
+				},
+				"10": {
+					"title": "Type 8: Multi-Slider",
+					"type": 8,
+					"enable": 1,
+					"mouse": "Single option that opens a slider menu to configure 2 or 3 separate numerical values at once.",
+					"vars": [
+						{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 7, "default": 50, "configINI": "OptionTypes:iMultiSlider1" },
+						{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 8, "default": 25, "configINI": "OptionTypes:iMultiSlider2" }
+					],
+					"scale": {
+						"setting1": "Var1",
+						"setting2": "Var2",
+						"value1Decimal": 0,
+						"value2Decimal": 0,
+						"value1Increment": 10,
+						"value2Increment": 5,
+						"value1Min": 10,
+						"value2Min": 0,
+						"value1Max": 100,
+						"value2Max": 50
+					}
+				},
+				"11": {
+					"title": "Type 9: Color Picker",
+					"type": 9,
+					"enable": 1,
+					"mouse": "Displays a color swatch and opens a HSV Color Picker to set three R, G, and B values from 0-255. This option will display the slider menu while a controller is connected.",
+					"vars": [
+						{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 9, "default": 0, "configINI": "OptionTypes:iColorPickerRed" },
+						{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 10, "default": 204, "configINI": "OptionTypes:iColorPickerGreen" },
+						{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 11, "default": 255, "configINI": "OptionTypes:iColorPickerBlue" }
+					]
+				}
+			}
+		},
+		"2": {
+			"listTitle": "Extra Examples",
+			"pageTitle": "Extra Examples",
+			"columns": 1,
+			"enable": 1,
+			"options": {
+				"1": {
+					"title": "Button Selection",
+					"enable": 1,
+					"type": 1,
+					"mouse": "This is an example dropdown menu that allows you to select from a number of controller button options. Notice how we are using string GameSettings to display the button prompt.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 12, "default": 0, "configINI": "ExtraExamples:iExample1" }],
+					"strings": [ "&sXBABtn;", "&sXBBBtn;", "&sXBXBtn;", "&sXBYBtn;", "&sXBRTrigger;", "&sXBLTrigger;", "&sXBRStick;", "&sXBLStick;", "&sXBLStick; + &sXBABtn;" ]
+				},
+				"2": {
+					"title": "Run Script On Click",
+					"enable": 1,
+					"type": 6,
+					"mouse": "This is an example option that runs a script function (e.g. console print) on option click.",
+					"vars": [],
+					"call": { "type": "snippet", "value": "PrintC %qOption Click%q" },
+					"textOn": " ",
+					"textOff": " "
+				}
+			}
+		},
+		"3": {
+			"listTitle": "State Toggling",
+			"pageTitle": "State Toggling",
+			"columns": 1,
+			"enable": 1,
+			"options": {
+				"1": {
+					"title": "Show Option 1",
+					"enable": 1,
+					"type": 5,
+					"mouse": "Toggle Option 1 visibility.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 13, "default": 0, "configINI": "StateToggle:iOption1" }]
+				},
+				"2": {
+					"title": "Option 1",
+					"state": { "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 13, "value": 1, "disable": 0 },
+					"type": 7,
+					"string": "Test"
+				},
+				"3": {
+					"title": "Enable Option 2",
+					"enable": 1,
+					"type": 5,
+					"mouse": "Toggle Option 1 interaction.",
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 14, "default": 0, "configINI": "StateToggle:iOption2" }]
+				},
+				"4": {
+					"title": "Option 2",
+					"state": { "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 14, "value": 1, "disable": 1 },
+					"type": 7,
+					"string": "Test"
+				},
+				"5": {
+					"title": "Toggle submenu 4",
+					"enable": 1,
+					"type": 5,
+					"mouse": "Enable and disable submenu 4",
+					"refresh": 1,
+					"vars": [{ "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 15, "default": 0, "configINI": "StateToggle:iSubmenu" }]
+				}
+			}
+		},
+		"4": {
+			"listTitle": "Toggleable Submenu",
+			"pageTitle": "Toggleable Submenu",
+			"columns": 1,
+			"state": { "form": "Goo1", "auxVar": "*_MCMExtenderExample", "key": 15, "value": 1 },
+			"options": {
+				"1": {
+					"title": "Dummy Submenu",
+					"enable": 1,
+					"type": 0,
+					"mouse": "This submenu is toggleable via the option in submenu 3."
+				}
+			}
+		}
+	}
+}

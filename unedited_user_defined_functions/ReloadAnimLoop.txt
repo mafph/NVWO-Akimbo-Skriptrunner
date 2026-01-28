@@ -1,0 +1,243 @@
+Begin Function {}
+ref rActor
+ref rWeap
+ref rNextWeap
+ref rAmmo
+ref rSound
+
+string_var sAnimation
+string_var sSoundPath
+
+float fTimer
+float fTimerDelta
+float fSoundTime
+float animMult
+float endTime
+float blendOut
+float blendCancel
+float loopEndTime
+float loopStartTime
+float fUpdateCounter
+float cancelTime
+
+int IsLooping
+int iCount
+int iCancel
+
+int iNum
+int iSize
+int AnimGroupIDNext
+int AnimGroupID
+
+int iIndex
+
+array_var aUpdateCounter
+array_var aSounds
+
+
+	let rActor := GetSelfAlt
+	let iIndex := rActor.AuxiliaryVariableGetFloat "*_AkimboLoopIndex" 0
+	let sAnimation := rActor.AuxiliaryVariableGetString "*_AkimboCurrentReload" 0
+
+	let rWeap := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][0]
+
+	let AnimGroupID := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][1]
+	let fTimer := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][2]
+	let animMult := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][3]
+	let endTime := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][4]
+	let aSounds := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5]
+
+	let blendOut := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6][0]
+	let blendCancel := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6][1]
+	let cancelTime := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6][2]
+
+	let AnimGroupIDNext := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][7]
+	let rNextWeap := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][8]
+
+	let aUpdateCounter := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][9]
+
+	let IsLooping := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][10]
+	if IsLooping
+		let loopStartTime := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][11]
+		let loopEndTime := PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][12]
+	endif
+
+	let fTimerDelta := GetSecondsPassed
+	let fTimerDelta *= animMult
+	let fTimer += fTimerDelta
+	rActor.SetAnimCurrentTime (sAnimation) fTimer
+
+	;Print "EndTime: " + $endTime
+	;Print "fTimer: " + $fTimer
+	;Print "AnimMult: " + $animMult
+	;Print "blendOut: " + $blendOut
+	;Print "IsLooping: " + $IsLooping
+
+	if eval IsFormValid rWeap == 0 || rActor.GetDead
+		fTimer = endTime + 1		;End animation
+		;Print "Force end animation"
+	endif
+
+	let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][2] := fTimer
+
+	if fTimer >= cancelTime
+		rActor.AuxiliaryVariableErase "*_AkimboCantCancelReload"
+	endif
+
+	if eval fTimer <= endTime && (IsLooping != 1 || fTimer < loopEndTime) && ((rActor.AuxiliaryVariableGetType "*_AkimboCancelReload" 0) == 0 || (rActor.AuxiliaryVariableGetType "*_AkimboCantCancelReload" 0) != 0)
+
+		let iSize := Ar_Size aSounds
+
+		;Sound..................................................................................................................
+
+		if eval iSize > 0
+
+				let iNum := -1
+				while (iNum += 1) < iSize
+
+					let fSoundTime := aSounds[iNum][0]
+					if eval aSounds[iNum][2] != 1 && fTimer >= fSoundTime
+	
+						if eval (TypeOf aSounds[iNum][1]) == "String"
+							let sSoundPath := aSounds[iNum][1]
+							SetSoundSourceFile PistolDummySound (sSoundPath)
+							rActor.PlaySound3D PistolDummySound
+						elseif eval (TypeOf aSounds[iNum][1]) == "Form"
+							let rSound := aSounds[iNum][1]
+							rActor.PlaySound3D rSound
+						endif
+
+						let aSounds[iNum][2] := 1	;Mark as played
+	
+					endif
+
+				loop
+
+		endif
+
+		;Ammo Counter..................................................................................................................
+
+		let iCount := rWeap.GetWeaponAmmoCount
+		if iCount < rWeap.GetClipSizeAlt
+
+			let iSize := Ar_Size aUpdateCounter
+			if eval iSize > 0
+	
+				let iNum := -1
+				while (iNum += 1) < iSize
+
+					let fUpdateCounter := aUpdateCounter[iNum][0]
+					if eval aUpdateCounter[iNum][2] != 1 && fTimer > fUpdateCounter
+	
+						let rAmmo := rWeap.GetWeaponAmmoType
+						let iCount := aUpdateCounter[iNum][1]
+						rActor.LoadWeaponWithAmmo rWeap rAmmo iCount
+						let aUpdateCounter[iNum][2] := 1	;Mark as played
+	
+					endif
+
+				loop
+
+			elseif IsLooping != 1 && (endTime * 0.6) < fTimer 	;Not looping
+
+				let rAmmo := rWeap.GetWeaponAmmoType
+				rActor.LoadWeaponWithAmmo rWeap rAmmo
+
+				if eval IsFormValid rNextWeap && rNextWeap && rNextWeap != rWeap
+					let rAmmo := rNextWeap.GetWeaponAmmoType
+					rActor.LoadWeaponWithAmmo rNextWeap rAmmo
+				endif
+
+			endif
+
+		endif
+
+	else
+
+		if eval (rActor.AuxiliaryVariableGetType "*_AkimboCantCancelReload" 0) == 0
+			let iCancel := rActor.AuxiliaryVariableGetType "*_AkimboCancelReload" 0
+		else
+			rActor.AuxiliaryVariableErase "*_AkimboCantCancelReload"
+			rActor.AuxiliaryVariableErase "*_AkimboCancelReload"
+		endif
+
+		if iCancel == 0
+
+			if IsLooping
+	
+				if eval (Ar_Size aUpdateCounter) <= 0
+					rActor.LoadWeaponWithAmmo rWeap rAmmo 1
+				endif
+	
+				let iCount := rWeap.GetWeaponAmmoCount
+				if eval iCount < rWeap.GetClipSizeAlt
+					Call PistolPlayReloadWeaponAnim rActor AnimGroupID sAnimation rWeap AnimGroupIDNext rNextWeap 			;Loop
+					let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][2] := 0  					;Reset fTimer
+					return
+				endif
+
+			endif
+
+			;Print "Ended " + $sAnimation + " " + $(rActor.IsAnimSequencePlaying (sAnimation))
+			if eval rActor.IsAnimSequencePlaying (sAnimation)
+				rActor.DeactivateAnim (sAnimation) blendOut
+				;Print "Deactivate Regular: " + $sAnimation
+			endif
+
+		else
+
+			;Print "Cancel: " + $sAnimation
+			if eval rActor.IsAnimSequencePlaying (sAnimation)
+
+				if blendCancel == 0
+
+					;rActor.DeactivateAnim (sAnimation) 0
+					rActor.BlendToAnimFromPose (sAnimation) 1 0.1 0 1
+
+					CallAfterSeconds 0.1 (Begin Function {}
+						rActor.DeactivateAnim (sAnimation) 0.1
+						rActor.RefreshAnimData
+						;Print "Deactive Cancel: " + $sAnimation
+					end)
+
+				else
+					rActor.DeactivateAnim (sAnimation) blendCancel
+					;Print "Deactive Cancel With custom Blend: " + $sAnimation
+					CallAfterSeconds blendCancel (Begin Function {}
+						rActor.RefreshAnimData
+					end)
+				endif
+
+			endif
+
+		endif
+
+		;End reload.........................................................................................
+	
+			Ar_Erase PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex], sAnimation
+			if eval (Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex]) <= 0
+				Ar_Erase PistolWeaponAkimboQuest.aAkimboFireLoop iIndex
+			endif
+
+			rActor.SetGameMainLoopCallback PistolReloadAnimLoop 0
+	
+		;Start next reload....................................................................................
+
+			CallAfterSeconds blendOut (Begin Function {}
+
+				;Print "Finished Blending out, remove current reload"
+				rActor.AuxiliaryVariableErase "*_AkimboCurrentReload"
+				rActor.AuxiliaryVariableErase "*_AkimboCancelReload"
+
+				if eval AnimGroupIDNext != 0 && iCancel == 0			;reload next weapon, but skip the anim check
+
+					;Print "Starting next group: " + $AnimGroupIDNext
+					Call PistolPlayReloadWeaponAnim rActor AnimGroupIDNext "" rNextWeap 0 rNextWeap 			;start next reload
+
+				endif
+
+			end)
+
+	endif
+
+end

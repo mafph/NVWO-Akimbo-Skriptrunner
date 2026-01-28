@@ -1,0 +1,63 @@
+Begin Function {float iHealth, ref rWeap}
+int iRemove
+float currentHealth
+float HealthLeft
+float HealthRight
+ref rActor
+ref rAkimboBase
+ref rAkimbo
+ref rWeapRight
+ref rWeapLeft
+
+	if iHealth < 0
+		Print "[NVWO] Error, weapon is healing itself."
+	endif
+
+	let currentHealth = rWeap.GetItemRefCurrentHealth 0
+
+	let currentHealth -= iHealth
+	rWeap.SetCurrentHealth currentHealth
+
+	let rActor = GetSelfAlt
+
+	if IsFormValid rActor
+
+		let rAkimbo = rActor.GetEquippedWeaponRef
+		let rAkimboBase = rAkimbo.GBI
+	
+		if IsAkimbo rAkimboBase
+
+			GetAkimboWeaponsAlt rAkimboBase rWeapLeft rWeapRight
+			let HealthLeft = rWeapRight.GetItemRefCurrentHealth 0
+			let HealthRight = rWeapLeft.GetItemRefCurrentHealth 0
+	
+			if HealthLeft < HealthRight
+				rAkimbo.SetItemRefCurrentHealth HealthLeft
+				if HealthLeft <= 0
+					MessageEx ("left " + $rWeapLeft.LNGetName + " broke")
+					let iRemove = 1
+				endif
+			else
+				rAkimbo.SetItemRefCurrentHealth HealthRight
+				if HealthRight <= 0
+					MessageEx ("right " + $rWeapRight.LNGetName + " broke")
+					let iRemove = 1
+				endif
+			endif
+
+			if eval iRemove
+				if (rActor.AuxiliaryVariableGetFloat "*_IsAttacking") > 0
+					rActor.AuxiliaryVariableSetFloat "*_AkimboCancelAttack" 1
+				endif
+
+				CallAfterSeconds 0 (Begin Function {}
+					if (rActor.AuxiliaryVariableGetFloat "*_IsAttacking") > 0
+						rActor.AuxiliaryVariableSetFloat "*_AkimboCancelAttack" 1
+					endif
+					let rAkimbo = rActor.GetEquippedWeaponRef
+					Call (CompileScript "Akimbo\MenuBreakApartItems") rAkimbo rActor
+				end)
+			endif
+		endif
+	endif
+end

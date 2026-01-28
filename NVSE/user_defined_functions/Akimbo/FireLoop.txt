@@ -1,0 +1,34 @@
+begin Function {string_var sAnimation}
+	ref rActor = ThisAlt
+	Let array_var aFireSeq = rActor.AuxVarGetAsArr "AkimboFireSeq"
+	
+	if eval (Ar_Size aFireSeq) <= 0 
+		PrintC "No FireSeq!"
+		return
+	endif
+	
+	ref rWeap = aFireSeq[sAnimation][0]
+	string_var sNode = aFireSeq[sAnimation][1]
+	int keyFire = aFireSeq[sAnimation][2]
+	float fTimer = aFireSeq[sAnimation][3]
+	float fireRate = aFireSeq[sAnimation][4]
+	int interval = 1 / fireRate
+	
+	if eval (GetDead == 0) && (rActor.GetAnimAction == -1 || rActor.GetAnimAction == 12) && rActor.AuxiliaryVariableGetType "*_AkimboCancelAttack" == 0 
+		int iRoundsLeft = rWeap.GetWeaponAmmoCount
+		if eval (IsKeyPressed keyFire 2) || (GetLeftTrigger > 0) && (GetDebugModeState 0 || iRoundsLeft > 0)
+				fTimer += GetSecondsPassed
+				if eval fTimer >= interval
+					Call CompileScript "Akimbo\FireProjectile.txt" rActor sAnimation rWeap sNode
+					let aFireSeq[sAnimation][3] = 0
+				else
+					let aFireSeq[sAnimation][3] = fTimer
+				endif
+		else
+			Let aFireSeq[sAnimation][5] = 0
+			PlaySound (GetWeaponSound rWeap 4)
+		endIf
+	endif
+	
+	rActor.AuxVarSetFromArr "AkimboFireSeq" aFireSeq
+End

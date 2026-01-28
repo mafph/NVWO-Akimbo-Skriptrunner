@@ -1,0 +1,304 @@
+Begin Function {rActor, AnimGroupID, sPreAnimation, rWeap, AnimGroupIDNext, rNextWeap}
+
+ref rActor
+ref rWeap
+ref rNextWeap
+ref rSound
+
+int AnimGroupID
+int AnimGroupIDNext
+
+string_var sAnimation
+string_var sPreAnimation
+string_var sString
+string_var soundPath
+
+ref rAmmo
+int textKey
+
+int iNum
+int iSize
+
+int BlendTo
+
+int iIndex
+int IsLooping
+int iCount
+int bFirstPerson
+
+float time
+float endTime
+float easeTime
+float animMult
+
+float perkMult
+
+array_var mAttributes
+array_var aGroup
+array_var aSubString
+
+	let iIndex := Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop
+
+	if eval (rActor.AuxiliaryVariableGetType "*_AkimboLoopIndex" 0) == 1
+		let iIndex := rActor.AuxiliaryVariableGetFloat "*_AkimboLoopIndex" 0
+	else
+		rActor.AuxiliaryVariableSetFloat "*_AkimboLoopIndex" iIndex 0
+	endif
+
+	if eval iIndex == -1
+		let PistolWeaponAkimboQuest.aAkimboFireLoop := Ar_Construct "array"
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex] := Ar_Construct "stringmap"
+		let iIndex := 0
+	elseif eval (Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex]) == -1
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex] := Ar_Construct "stringmap"
+	endif
+
+	if rActor.GetAnimAction != -1
+		;Print "Deactivate anim: " + (sAnimation)
+		if eval rActor.IsAnimSequencePlaying (sPreAnimation)
+			rActor.DeactivateAnim (sAnimation)
+		endif
+	endif
+
+	if eval (rActor.AuxiliaryVariableGetFloat "*_IsAttacking") > 0
+		rActor.AuxiliaryVariableSetFloat "*_AkimboCancelAttack" 1
+		CallAfterSeconds 0.1 (Begin Function {}
+			rActor.AuxiliaryVariableErase "*_AkimboCancelAttack"
+		end)
+	endif
+
+	if eval AnimGroupID == -1
+		;Print "Invis Reload..............."
+		let rAmmo := rWeap.GetWeaponAmmoType
+		rActor.LoadWeaponWithAmmo rWeap rAmmo
+		return
+	endif
+
+	if eval rActor == Player && IsPC1stPerson
+		let bFirstPerson := 1
+	endif
+
+	let aGroup := rActor.GetAnimationsByAnimGroup (AnimGroupID) bFirstPerson
+
+	if eval (Ar_Size aGroup) > 0
+
+		let sAnimation := aGroup[0]
+		let mAttributes := GetAnimationAttributes (sAnimation)
+
+		if eval (Ar_Size mAttributes) <= 0
+			Print "Error GetAnimationAttributes returned null on for anim: " + $sAnimation
+			return
+		endif
+
+		let animMult := rWeap.GetWeaponAnimMult
+		if rActor.HasPerk RapidReload
+			let perkMult := GetNthPerkEntryValue1 RapidReload 0
+			let animMult += perkMult - 1 			;Sub 1 so these can stack
+		endif
+		let endTime := mAttributes["endKeyTime"]
+
+		if eval rActor.IsAnimSequencePlaying (sPreAnimation)  ;Called on playing anim
+
+			let iIndex := rActor.AuxiliaryVariableGetFloat "*_AkimboLoopIndex" 0
+
+			if eval (PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sPreAnimation][9]) 	;IsLooping
+
+				if eval sPreAnimation == sAnimation
+
+					let textKey := Ar_Find "loopStart", mAttributes["textKeyValues"]
+					let time := mAttributes["textKeyTimes"][textKey]
+					rActor.SetAnimCurrentTime $sAnimation time
+
+					return  ;Loop
+
+				else
+
+					let BlendTo := 1  ;Change looping anim
+					Ar_Erase PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex], sAnimation
+
+				endif
+
+			endif
+
+		endif
+
+	;Play Anim..............................................................................................
+
+		if BlendTo
+
+			;Print "Blending from reload anim: " + $sPreAnimation
+			;Print "To: " + $sAnimation
+
+			let easeTime := 0 									;Blend between two different loops
+			let textKey := Ar_Find "blendLoop", mAttributes["textKeyValues"]
+			if eval textKey != Ar_BadNumericIndex
+				let easeTime := mAttributes["textKeyTimes"][textKey]
+			endif
+			let easeTime /= AnimMult
+
+			rActor.BlendToAnim (sPreAnimation) (sAnimation) bFirstPerson 1 1 1 easeTime
+
+		else
+
+			let easeTime := 0
+			let textKey := Ar_Find "blendIn", mAttributes["textKeyValues"]
+			if eval textKey != Ar_BadNumericIndex
+				let easeTime := mAttributes["textKeyTimes"][textKey]
+			endif
+			if easeTime != 0
+				let easeTime /= AnimMult
+			endif
+
+			;Issues when switching views
+			;Print "Playing Anim: " + $sAnimation
+			;if bFirstPerson 
+				rActor.ActivateAnim (sAnimation) bFirstPerson 1 1 1 easeTime
+			;endif
+			;rActor.ActivateAnim (sAnimation) 0 1 1 1 easeTime
+
+		endif
+
+		rActor.AuxiliaryVariableSetString "*_AkimboCurrentReload" $sAnimation 0
+
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation] := Ar_Construct "array"
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][0] := rWeap
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][1] := AnimGroupID
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][2] := 0			;Timer set to 0
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][3] := AnimMult  ;Mult
+
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][4] := endTime  ;End time
+
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5] := Ar_Construct "array"  	;Sound Files
+
+		;Canceling.....................................................................................................
+
+			let easeTime := 0
+			let textKey := Ar_Find "blendOut", mAttributes["textKeyValues"]
+			if eval textKey != Ar_BadNumericIndex
+				let easeTime := mAttributes["textKeyTimes"][textKey]
+			endif
+			let easeTime /= AnimMult
+
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6] := Ar_Construct "array"
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6][0] := easeTime
+
+		;.........................................................................................................
+
+			let easeTime := 0
+			let textKey := Ar_Find "blendCancel", mAttributes["textKeyValues"]
+			if eval textKey != Ar_BadNumericIndex
+				let easeTime := mAttributes["textKeyTimes"][textKey]
+			endif
+			if easeTime != 0
+				let easeTime /= AnimMult
+			endif
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6][1] := easeTime
+
+		;.........................................................................................................
+
+			let time := 0.5
+			let textKey := Ar_Find "startCancel", mAttributes["textKeyValues"]
+			if eval textKey != Ar_BadNumericIndex
+				let time := mAttributes["textKeyTimes"][textKey]
+			endif
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][6][2] := time
+			Player.AuxiliaryVariableSetFloat "*_AkimboCantCancelReload" 1
+
+		;.....................................................................................................
+
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][7] := AnimGroupIDNext		;Next group to play
+		let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][8] := rNextWeap
+
+		;Update Ammo Text Key................................................................................................
+
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][9] := Ar_Construct "array"
+			let iSize := Ar_Size mAttributes["textKeyValues"]
+			let iNum := -1
+			while (iNum += 1) < iSize
+	
+				let sString := mAttributes["textKeyValues"][iNum]
+	
+				if eval (Sv_Find "UpdateAmmo:", sString) > -1
+
+					let time := mAttributes["textKeyTimes"][iNum]
+					let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][9][0] := time		;UpdateAmmo time
+
+					Sv_Erase sString, 11
+					let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][9][1] := #sString	;UpdateAmmo count
+
+				elseif eval (Sv_Find "SoundPath", sString) > -1
+
+					let soundPath := mAttributes["textKeyValues"][iNum]
+					let time := mAttributes["textKeyTimes"][iNum]
+					let aSubString := Sv_Split soundPath ":"
+					if eval (Ar_HasKey aSubString 1)
+
+						Ar_Append PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5] (Ar_Construct "array")
+						let textKey := Ar_Last PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5]
+						let soundPath := aSubString[1]
+						let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5][textKey][0] := time   	;Sound time
+						let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5][textKey][1] := "Data/sound/" + soundPath   	;Sound Files
+						let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5][textKey][2] := 0
+
+					endif
+
+				elseif eval (Sv_Find "Sound", sString) > -1
+
+					let soundPath := mAttributes["textKeyValues"][iNum]
+					let time := mAttributes["textKeyTimes"][iNum]
+					let aSubString := Sv_Split soundPath ":"
+					if eval (Ar_HasKey aSubString 1)
+
+						let soundPath := aSubString[1]
+						Sv_Replace " |", soundPath
+						let rSound := EditorIDToFormID (soundPath)
+						if IsFormValid rSound
+
+							Ar_Append PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5] (Ar_Construct "array")
+							let textKey := Ar_Last PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5]
+							let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5][textKey][0] := time   	;Sound time
+							let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5][textKey][1] := rSound  	;Sound Files
+							let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][5][textKey][2] := 0
+						endif
+
+					endif
+
+				endif
+	
+			loop
+
+		;Looping...........................................................................................................
+
+		let textKey := Ar_Find "loopStart", mAttributes["textKeyValues"]
+		if eval textKey != Ar_BadNumericIndex
+
+			let time := mAttributes["textKeyTimes"][textKey]
+
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][10] := 1							;Is Looping
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][11] := time 					;Looping start time
+
+			let textKey := Ar_Find "loopEnd", mAttributes["textKeyValues"]
+			if eval textKey != Ar_BadNumericIndex
+				let time := mAttributes["textKeyTimes"][textKey]
+			else
+				let time := endTime
+			endif
+
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][12] := time 						;Looping end time
+
+		else
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[iIndex][sAnimation][10] := 0		;Not looping
+		endif
+
+		rActor.SetGameMainLoopCallback PistolReloadAnimLoop 1 0 1
+	
+	else
+	
+		Print "No Anim found for group: " + $AnimGroupID
+		let rAmmo := rWeap.GetWeaponAmmoType
+		rActor.LoadWeaponWithAmmo rWeap rAmmo
+
+	endif
+
+end
+

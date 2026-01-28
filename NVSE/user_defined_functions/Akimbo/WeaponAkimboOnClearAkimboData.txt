@@ -1,0 +1,64 @@
+begin Function {ref rActor, ref akimboRef} ;Clear all actor data for a fresh start
+
+	RemoveEventHandler "OnActorUnEquip" (CompileScript "Akimbo\WeaponAkimboOnClearAkimboData.txt") "first"::rActor
+	rActor.RemoveAnimatedNodePriority "Bip01 Spine"
+	if rActor == Player
+		
+	endif
+
+	if IsAkimbo akimboRef
+
+		;Print "Unequipping Akimbo: " + $akimboRef + " On Actor: " + $rActor
+
+		if IsBaseForm akimboRef
+			let akimboRef = rActor.GetFirstRefForItem akimboRef
+		endif
+		
+		ref rWeapLeft
+		ref rWeapRight
+
+		GetAkimboWeaponsAlt akimboRef rWeapLeft rWeapRight
+
+		if eval IsFormValid rWeapRight && IsFormValid rWeapLeft
+
+			;Remove left hand model
+
+			if eval (rActor.AuxiliaryVariableGetType "*_LeftHandNifDirectory") == 4
+
+				let string_var sString = rActor.AuxiliaryVariableGetString "*_LeftHandNifDirectory"
+				rActor.AuxiliaryVariableErase "*_LeftHandNifDirectory"
+				AttachFormModel rActor (rWeapLeft.GBI) 2 (sString)
+
+			else
+				;Print $rActor + " Has no LeftHandNifDirectory Aux: " + $(rActor.AuxiliaryVariableGetString "*_LeftHandNifDirectory")
+			endif
+
+			;Remove ammo....................................................
+
+			let int iCountLeft = rWeapLeft.GetWeaponAmmoCount
+			;Print "Adding Left ammo: " + $iCountLeft
+			let ref ammo = rWeapLeft.GetWeaponAmmoType
+			;PrintVar ammo
+			rWeapLeft.SetWeaponAmmoCount 0
+			
+			rActor.AddItemAlt ammo iCountLeft
+
+			let int iCountRight = rWeapRight.GetWeaponAmmoCount
+			;Print "Adding Right ammo: " + $iCountRight
+			let ref ammo = rWeapRight.GetWeaponAmmoType
+			;PrintVar ammo
+			rWeapRight.SetWeaponAmmoCount 0
+			
+			rActor.AddItemAlt ammo iCountRight
+
+			;Disable akimbo controls........................................
+	
+			if rActor == player
+				RefreshItemsList
+			endif
+
+		endif
+
+	endif
+
+end

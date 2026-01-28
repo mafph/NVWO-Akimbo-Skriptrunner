@@ -1,0 +1,12 @@
+
+int iInspecting
+int bLaserOff
+
+array_var aHideVanillaModButton
+
+array_var aMoving1
+array_var aMoving2
+
+array_var aLasers
+
+array_var aFreeze

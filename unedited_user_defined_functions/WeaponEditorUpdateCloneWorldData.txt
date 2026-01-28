@@ -1,0 +1,80 @@
+ref rWeap
+ref rActor
+
+array_var aForms
+
+int iNum
+int iSize
+int iFound
+int iRefIndex ;Used for a reference based system. Always 0 in a baseform based system
+
+float fX
+float fY
+float fZ
+
+Begin Function {rerWeapBase}
+
+return
+
+	if IsCloned rWeapBase
+
+		;Print "Running PistolWeaponEditorUpdateCloneWorldData On: " + $(GetEditorID rWeapBase)
+
+		if IsReference rWeapBase
+			let rWeap := rWeapBase
+			let rWeapBase := rWeapBase.GBI
+		endif
+	
+		if IsFormValid rWeap
+	
+			rWeap.SetRefExtraData
+
+			let iRefIndex := 0
+			let iNum := AuxiliaryVariableGetFloat "*_DataIndex" 0 rWeapBase
+
+			;Print "Data Index: " + $iNum
+			if eval rWeap.IsInInterior
+				let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][0] := rWeap.gpc
+			else
+				let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][0][0][0] := rWeap.gpw
+			endif
+
+			;Print "Is World Ref Dropped in: " + $(PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][0])
+			;Print $iNum
+
+		;Base Weapon
+			if eval PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][0] == 0
+				let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][0] := (AuxiliaryVariableGetRef "*_BaseForm" 0 rWeapBase)
+			endif
+
+		;Location Data
+
+			rWeap.GetPosEx fX fY fZ
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][1] := fX
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][2] := fY
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][3] := fZ
+	
+			rWeap.GetAngleEx fX fY fZ
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][4] := fX
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][5] := fY
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][0][6] := fZ
+			let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][1][iRefIndex][1] := rWeap.GetCurrentHealth	;Health
+
+		;Unused
+			;let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][2]
+
+		;Attachments
+			;let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][3]
+
+		;Clone Instance
+			if eval PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][4] == 0
+				let PistolWeaponAttachmentSystemQuest.aClonedWeaponsList[iNum][4] := rWeapBase
+			endif
+	
+		else
+			Print "Error No Form Found PistolWeaponEditorUpdateCloneWorldData"
+		endif
+
+	endif
+
+end

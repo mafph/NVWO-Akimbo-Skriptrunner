@@ -1,0 +1,93 @@
+Begin Function {ref rActor, int ReloadLeft, int ReloadRight, int BypassClipSize}
+
+	;Print "Reloading.........................................................."
+	array_var aGroup
+	ref rWeapRight
+	ref rWeapLeft
+
+	;ReloadR = 177			;ReloadA Reload Right
+
+	int ReloadL = 188		;ReloadL Reload Left
+	int ReloadShortL = 1	;11 Reload Left
+
+	int ReloadR = 194			;ReloadR this seems to be broken, so we use reload group A now
+	int ReloadShortR = 17		;ReloadR
+
+	int ReloadB = 178			;ReloadB Reload Both
+	int ReloadShortB = 1		;ReloadB Reload Both
+
+	ref rWeap = rActor.GetEquippedWeaponRef
+	ref rBase = rWeap.GBI
+
+	if eval IsAkimbo rBase
+
+		let int iIndex = Ar_Size PistolWeaponAkimboQuest.aAkimboFireLoop
+		if eval iIndex == -1
+			let PistolWeaponAkimboQuest.aAkimboFireLoop = Ar_Construct "array"
+			let PistolWeaponAkimboQuest.aAkimboFireLoop[0] = Ar_Construct "stringmap"
+			iIndex = 0
+		endif
+
+		GetAkimboWeaponsAlt rWeap rWeapLeft rWeapRight
+
+		if eval IsFormValid rWeapLeft && IsFormValid rWeapRight
+
+			let int iCountLeft = rWeapLeft.GetWeaponAmmoCount
+			let int iCountRight = rWeapRight.GetWeaponAmmoCount
+
+			if eval ReloadRight && (BypassClipSize || rWeapRight.GetClipSizeAlt > iCountRight) && (Call PistolCheckActorAmmoForReload rActor rWeapRight)
+
+				SetFunctionValue 1
+
+				if eval ReloadLeft && (BypassClipSize || rWeapLeft.GetClipSizeAlt > iCountLeft) && (Call PistolCheckActorAmmoForReload rActor rWeapLeft)	;Reload Left and right
+				
+					if IsPC1stPerson
+						let aGroup := rActor.GetAnimationsByAnimGroup ReloadB 1
+					else
+						let aGroup := rActor.GetAnimationsByAnimGroup ReloadB 0
+					endif
+
+					if eval Ar_Size aGroup 				;Reload Both with Anim B
+						SetReloadAnim ReloadShortB rBase
+						Call PistolPlayReloadWeaponAnim rActor ReloadB "" rWeapLeft (-1) rWeapRight
+						;Print "Reload Both left and right mags"
+						return
+					endif
+
+					if iCountLeft < iCountRight
+						SetReloadAnim ReloadShortL rBase
+						Call PistolPlayReloadWeaponAnim rActor ReloadL "" rWeapLeft ReloadR rWeapRight   ;Reload left first
+						;Print "Reload left then right"
+					else
+						SetReloadAnim ReloadShortR rBase
+						Call PistolPlayReloadWeaponAnim rActor ReloadR "" rWeapRight ReloadL rWeapLeft   ;Reload right first
+						;Print "Reload right then left"
+					endif
+
+					return
+
+				else ;Reload only right
+
+					;Print "Reload Right Only"
+					SetReloadAnim ReloadShortR rBase
+					Call PistolPlayReloadWeaponAnim rActor ReloadR "" rWeapRight 0 rWeapRight 		;Reload only right
+					return
+
+				endif
+
+			endif
+
+			if eval ReloadLeft && (BypassClipSize || rWeapLeft.GetClipSizeAlt > iCountLeft) && (Call PistolCheckActorAmmoForReload rActor rWeapLeft)
+
+				;Print "Reload Left Only"
+				SetReloadAnim ReloadShortL rBase
+				Call PistolPlayReloadWeaponAnim rActor ReloadL "" rWeapLeft 0 rWeapLeft 		;Reload only left
+				SetFunctionValue 1
+
+			endif
+
+		endif
+
+	endif
+
+end

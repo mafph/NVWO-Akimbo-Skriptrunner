@@ -1,0 +1,33 @@
+Begin Function {ref Equipper, ref rWeap}
+	let array_var aFireSeq = ar_Construct Stringmap
+	let array_var animGroupLeft	= Player.GetAnimationsByAnimGroup AttackLeft 0
+	let array_var animGroupRight	= Player.GetAnimationsByAnimGroup AttackRight 0
+			
+	if eval (Ar_Size animGroupLeft) > 0 && (Ar_Size animGroupRight) > 0
+		let string_var sAnimationLeft	= animGroupLeft[0]
+		let string_var sAnimationRight 	= animGroupRight[0]
+	else
+		return
+	endif
+			
+	let ref rWeapLeft	= GetAkimboWeapons rWeap 1
+	let ref rWeapRight	= GetAkimboWeapons rWeap 0
+		
+	let aFireSeq[sAnimationLeft] := Ar_Construct Array
+	let aFireSeq[sAnimationLeft][0] := rWeapLeft
+	let aFireSeq[sAnimationLeft][1] := "ProjectileNode_AL"
+	let aFireSeq[sAnimationLeft][2] := 256
+	let aFireSeq[sAnimationLeft][3] := 0						;timer (for next round)
+	let aFireSeq[sAnimationLeft][4] := rWeapLeft.GetFireRate
+	let aFireSeq[sAnimationLeft][5] := 0						;currently autofire
+	
+	let aFireSeq[sAnimationRight] := Ar_Construct Array
+	let aFireSeq[sAnimationRight][0] := rWeapRight
+	let aFireSeq[sAnimationRight][1] := "ProjectileNode"
+	let aFireSeq[sAnimationRight][2] := 257
+	let aFireSeq[sAnimationRight][3] := 0
+	let aFireSeq[sAnimationRight][4] := rWeapRight.GetFireRate
+	let aFireSeq[sAnimationRight][5] := 0						
+	
+	Equipper.AuxVarSetFromArr "AkimboFireSeq" aFireSeq
+End

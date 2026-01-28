@@ -1,0 +1,7 @@
+Begin Function {ref rModifier}
+	if IsFormValid rModifier
+		if (rModifier.GetDistance Player) < 131072
+			
+		endif
+	endif
+end

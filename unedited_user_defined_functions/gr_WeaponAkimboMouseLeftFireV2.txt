@@ -1,0 +1,62 @@
+Begin Function {}
+int iRounds
+ref rAkimboBase
+ref rWeapLeft
+string_var sString
+array_var animGroup
+
+	;Print "Left Fire"
+	let rAkimboBase := Player.GetEquippedWeapon
+	
+	if eval Player.IsWeaponOut == 0
+		EnableControl 4
+		tc 4
+		CallAfterSeconds 0.1 (begin function {} 
+			DisableControl 4 
+		end)
+		return
+	endif
+
+	;Weapon is out........................................................................
+
+	let ref rWeapLeft = GetAkimboWeapons rAkimboBase 1
+	let int iRounds = rWeapLeft.GetWeaponAmmoCount
+
+	if IsThirdPerson
+		Player.OverrideAnimatedNodePriority 0 "Bip01 Spine"
+		;SetGameMainLoopCallback (CompileScript "Akimbo\AkimboSpineLoop.txt") 1 0 1
+	endif
+
+	if eval iRounds > 0 || GetDebugModeState 0
+		let int is1stPerson = IsPC1stPerson
+		let animGroup := Player.GetAnimationsByAnimGroup AttackLeft	is1stPerson
+
+		if eval (Ar_Size animGroup) > 0
+			let sString := animGroup[0]
+		else
+			return
+		endif
+		
+		ref rActor = GetSelfAlt
+		Let array_var aFireSeq = rActor.AuxVarGetAsArr "AkimboFireSeq"
+	
+		if eval (Ar_Size aFireSeq) <= 0 
+			PrintC "No FireSeq!"
+			return
+		endif
+		
+		aFireSeq[0] = sString
+		
+		if GetIsAutomatic rAkimboBase
+			aFireSeq[0][5] = 1
+			rActor.AuxVarSetFromArr "AkimboFireSeq" aFireSeq
+			ref FireProjectileLoop = CompileScript "Akimbo\FireProjectileLoop.txt"
+			;Player.SetGameMainLoopCallback FireProjectileLoop 1 0 1
+		else
+			;Print "Single Fire"
+			Call (CompileScript "Akimbo\FireProjectile.txt") Player sString rWeapLeft "ProjectileNode_AL"
+		endif
+		
+		
+	endif
+end

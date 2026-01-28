@@ -1,0 +1,15 @@
+Begin Function {}
+
+	if eval PistolWeaponAkimboQuest.bAkimboMode && (IsKeyDisabled (GetControl 18) != 1 || IsKeyDisabled (GetControl 7) != 1 || IsKeyDisabled PistolWorldOverhaulMCMQuest.kAkimboRightFire != 1 || IsKeyDisabled PistolWorldOverhaulMCMQuest.kAkimboLeftFire != 1)
+
+		Call PistolUDFKeyKontrolSystem 14 0
+		Call PistolUDFKeyKontrolSystem 14 1
+
+		;Print "Akimbo Controls reset"
+
+	endif
+
+	Call (CompileScript "Akimbo\AkimboStopAnim.txt")
+	Call PistolWeaponAkimboAmmoTracker
+
+end
